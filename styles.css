@@ -1,0 +1,202 @@
+h1 {margin:0;padding:0;}
+h1 {font-size:100%;}
+p {margin: 0;}
+
+body {
+    background-color: #CFD0CF;
+    margin: 0px;
+}
+
+h1 {
+    margin-top: 40px;
+    margin-bottom:40px;
+}
+
+.header {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 42px;
+    font-weight: bold;
+    color: #434344;
+    text-align: center;
+    width: 100%;
+    line-height: 47px;
+}
+
+.card-grid {
+    display: grid;
+    perspective: 600px;
+}
+
+.card-grid-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timer {
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 30px;
+    line-height: 36px;
+    text-align: center;
+    font-size: 32px;
+    color: #434344;
+    font-weight: bold;
+}
+
+.card {
+    display: none;
+    height: 130px;
+    transform-style: preserve-3d;
+    width: 130px;
+}
+
+.card-front, .card-back {
+    backface-visibility: hidden;
+    border-radius: 9px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    cursor: default;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+}
+
+.card-front {
+    position: absolute;
+    background-image: linear-gradient(to top right, #22AB93, #19668D);
+    border: 5px solid white;
+}
+
+.card-back {
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    display: flex;
+    font-size: 75px;
+    transform: rotateY(180deg);
+}
+
+.card-front:hover, .play-again-button:hover {
+    box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.1);
+}
+
+.open-card, .close-card {
+    animation-fill-mode: forwards;
+    transition: transform .5s;
+}
+
+.open-card {
+    transform: rotateY(180deg);
+}
+
+.close-card {
+    transform: rotateY(0deg);
+}
+
+.match {
+    background-color: #5AD66F;
+}
+
+.mismatch {
+    background-color: #F44336;
+}
+
+.notification {
+    display: none;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 25%;
+    min-width: 350px;
+    height: 15%;
+    min-height: 188px;
+    background-color: white;
+    font-size: 48px;
+    font-weight: bold;
+}
+
+.notification-text-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.notification-text {
+    display: flex;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #434344;
+    margin-top: 30px;
+    height: 48px;
+    text-align: center;
+}
+
+.notification-text > p {
+    transform-origin: bottom;
+    /* animation: bounce-1 .8s infinite;
+    animation-timing-function: linear; */
+}
+
+.play-again-button {
+    width: 100%;
+    display: flex;
+    font-family: Arial, Helvetica, sans-serif;
+    align-items: center;
+    justify-content: center;
+    background-image: linear-gradient(to right, #19668D, #22AB93);
+    border-radius: 9px;
+    font-size: 20px;
+    height: 40px;
+    width: 150px;
+    margin-top: 40px;
+    margin-bottom: 30px;
+
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.play-again-button:active {
+    box-shadow: inset 2px 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+.play-again-button:hover {
+    cursor: pointer;
+}
+
+.play-again-text {
+    animation: bounce 450ms;
+    color: white;
+}
+
+.fullscreen {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: rgb(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+@keyframes bounce {
+    25%{transform: scale(1.15);}
+    50%{transform: scale(0.9);}
+    75%{transform: scale(1.1);}
+    100%{transform: scale(1.0);}
+}
+
+@keyframes bounce-1 {
+    0%, 100% {
+        transform: scale(1, 1);
+      }
+      40% {
+        transform: translateY(-15px) scale(1, 1.5);
+      }
+      70% {
+        transform: translateY(0px) scale(1, 1);
+      }
+      80% {
+        transform: translateY(10px) scale(1, .75);
+      }
+}
+
