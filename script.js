@@ -1,234 +1,294 @@
 let cellsWidth = 4;
 let cellsHeight = 3;
-let time = {m: 1, s: 0};
-let gameStarted = false;
-let timerId;
+let time = { m: 1, s: 0 };
 
-let emojis = ['🐶','🐱','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁',
-'🐮','🐷','🐸','🐙','🐵','🦄','🐞','🦀','🐟',
-'🐊','🐓','🦃','🐿', '🐬', '🐳', '🐋', '🐏', '🐑', '🐡'];
+let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
+    '🐮', '🐷', '🐸', '🐙', '🐵', '🦄', '🐞', '🦀', '🐟',
+    '🐊', '🐓', '🦃', '🐿', '🐬', '🐳', '🐋', '🐏', '🐑', '🐡'];
+
+    // remove this
+let timerId;
 let openedCards = [];
 
 function initGame() {
-    let card = document.querySelector('.card');
-    
-    let shuffled = shuffleCards();
+    let shuffled = shuffle(emojis).slice(0, cellsWidth * cellsHeight / 2);
+    let shuffled2 = shuffled.concat(shuffled);
+    let shuffledEmojis = shuffle(shuffled2);
+    let cards = [...Array(cellsWidth * cellsHeight).keys()].map(i => new Card(shuffledEmojis[i]));
 
-    let grid = initGrid();
-    grid.addEventListener('click', (event) => addCardEventListeners(event), true);
-
+    let timer = new Timer(time);
+    let game = new Game(cards, timer);
+    game.createGrid();
     let playAgainBtn = document.querySelector('.play-again-button');
-    playAgainBtn.addEventListener('click', (event) => playAgain()) 
-    
-    let timer = document.querySelector('.timer');
-    let timeInternal = time;
-    timer.textContent = formatTime(timeInternal);
+    playAgainBtn.addEventListener('click', (event) => game.restart())
+}
 
-    function initGrid() {
-        let cardGrid = document.getElementById('card-grid');
-        cardGrid.style.gridTemplateColumns = 'repeat(' + (cellsWidth - 1) + ', 130px 25px) 130px';
-        cardGrid.style.gridTemplateRows = 'repeat(' + (cellsHeight - 1) + ', 130px 25px) 130px';
+class Game {
+    constructor(cards, timer) {
+        this.cards = cards;
+        this.timer = timer;
+        this.openedCards = [];
+        this.createGrid();
+    }
 
-        for (var i = 1; i <= cellsHeight*2; i+=2) {
+    end(timerId, resultText, buttonText) {
+        clearInterval(timerId);
+        document.querySelector('.fullscreen').style.display = 'flex';
+        document.querySelector('.notification').style.display = 'flex';
+        splitTextToTags(resultText);
+        document.querySelector('.play-again-text').textContent = buttonText;
+    }
+
+    restart() {
+        let shuffled = shuffle(emojis).slice(0, cellsWidth * cellsHeight / 2);
+        let shuffled2 = shuffled.concat(shuffled);
+        let shuffledEmojis = shuffle(shuffled2);
+
+        let getNext = function (arr) {
+            let counter = 0;
+            return function () {
+                let next = arr[counter]; counter += 1; return next;
+            }
+        };
+
+        let nextEmoji = getNext(shuffledEmojis);
+        this.cards.forEach(c => {
+            c.clear(true);
+            setTimeout(function () {
+                c.textContent = nextEmoji();
+                c.element.style.transition = 'transform .5s';
+            }, 200);
+        });
+
+        openedCards = [];
+        document.querySelector('.fullscreen').style.display = 'none';
+        timerId = this.timer.start(this.end);
+    }
+
+    createGrid() {
+        let grid = document.getElementById('card-grid');
+        grid.style.gridTemplateColumns = 'repeat(' + (cellsWidth - 1) + ', 130px 25px) 130px';
+        grid.style.gridTemplateRows = 'repeat(' + (cellsHeight - 1) + ', 130px 25px) 130px';
+
+        for (var i = 1; i <= cellsHeight * 2; i += 2) {
             let gridRowStart = i;
             let gridRowEnd = i + 1;
-            for (var j = 1; j <= cellsWidth*2; j+=2) {
+            for (var j = 1; j <= cellsWidth * 2; j += 2) {
                 let gridColumnStart = j;
                 let gridColumnEnd = j + 1;
-                var newCard = i == 1 && j == 1 ? card : card.cloneNode(true);
-                newCard.classList.add('close-card');
-                newCard.style.display = 'inline-block';
-                
-                var cardBack = Array.from(newCard.getElementsByClassName('card-back'))[0];
-                cardBack.textContent = shuffled[(i - 1)/2*cellsWidth + (j - 1)/2];
-    
-                newCard.style.gridArea = gridRowStart + ' / ' + gridColumnStart + ' / ' + gridRowEnd + ' / ' + gridColumnEnd;
-                cardGrid.appendChild(newCard);
+                let card = this.cards[(i - 1) / 2 * cellsWidth + (j - 1) / 2];
+                card.setGridArea(gridRowStart, gridColumnStart, gridRowEnd, gridColumnEnd);
+                grid.appendChild(card.element);
             }
         }
 
-        return cardGrid;
+        grid.addEventListener('click', (event) => this.AddEventListeners(event, this.timer, this), true);
+        return grid;
     }
 
-    function addCardEventListeners(event) {
-        var target = event.target;
-        var parent = target.parentElement;
+    AddEventListeners(event, timer, game) {
+        let target = event.target;
+        let parent = target.parentElement;
 
         if (target.classList.contains('card-grid') || target.classList.contains('card') || parent.classList.contains('freezed')) {
             return;
         }
-        
-        if (target.classList.contains('card-front') && !gameStarted) {
-            timerId = startTimer();
-            gameStarted = true;
+
+        if (target.classList.contains('card-front') && !timer.isStarted) {
+            timerId = timer.start(game.end);
+            timer.isStarted = true;
         }
 
-        if (isOpened(parent)) {
-            parent.classList.remove('open-card');
-            parent.classList.add('close-card');
+        let card = new Card(null, parent);
+
+        if (card.isOpened()) {
+            card.close();
         }
         else {
-            parent.classList.add('open-card');
-            parent.classList.remove('close-card');
-            parent.classList.add('freezed');
-            
+            card.open();
             switch (openedCards.length) {
-                case 0: 
-                    openedCards.push(parent);
+                case 0:
+                    openedCards.push(card);
                     break;
-                case 1: 
-                    if (parent.textContent == openedCards[0].textContent) { // todo match function
-                        openedCards[0].querySelector('.card-back').classList.add('match');
-                        parent.querySelector('.card-back').classList.add('match');
-                        openedCards[0].classList.add('freezed');
+                case 1:
+                    if (card.matches(openedCards[0])) {
+                        openedCards[0].match();
+                        card.match();
                         openedCards = [];
                         if (Array.from(document.getElementsByClassName('open-card')).length == cellsWidth * cellsHeight) {
-                            endGame(timerId, 'Win', 'Play again');
+                            game.end(timerId, 'Win', 'Play again');
                         }
-                            
                     }
                     else {
-                        openedCards[0].querySelector('.card-back').classList.add('mismatch');
-                        parent.querySelector('.card-back').classList.add('mismatch');
-                        openedCards[0].classList.add('freezed');
-                        openedCards.push(parent);
+                        openedCards[0].mismatch();
+                        card.mismatch();
+                        openedCards.push(card);
                     }
                     break;
                 case 2:
                     openedCards.forEach(c => {
-                        c.querySelector('.card-back').classList.remove('mismatch');
-                        c.classList.remove('freezed');
-                        c.classList.remove('open-card');
-                        c.classList.add('close-card');
+                        c.clear();
+                        c.close();
                     })
-    
-                    openedCards = [ parent ];
+
+                    openedCards = [card];
                     break;
             }
         }
     }
+}
 
-    function open(card) {
-        card.classList.remove('close-card');
-        card.classList.add('open-card');
-    }
+class Card {
+    constructor(content, element) {
+        if (content) {
+            let card = document.createElement('div');
+            card.classList.add('card');
+            let cardFront = document.createElement('div');
+            cardFront.classList.add('card-front');
+            card.appendChild(cardFront);
+            this.cardFront = cardFront;
 
-    function close(card, quick) {
-        card.classList.remove('open-card');
-        card.classList.add('close-card');
-        if (quick) 
-            card.style.transition = 'transform .2s';
-    }
+            let cardBack = document.createElement('div');
+            cardBack.classList.add('card-back');
+            card.appendChild(cardBack);
+            cardBack.textContent = content;
+            this.cardBack = cardBack;
 
-    function isOpened(card) {
-        return card.classList.contains('open-card')
-    }
-
-    function shuffleCards() {
-        let shuffled = shuffle(emojis).slice(0, cellsWidth * cellsHeight / 2);
-        let shuffled2 = shuffled.concat(shuffled);
-        return shuffle(shuffled2);
-    }
-
-    function shuffle(a) {
-        var j, x, i;
-        for (i = a.length - 1; i > 0; i--) {
-            j = Math.floor(Math.random() * (i + 1));
-            x = a[i];
-            a[i] = a[j];
-            a[j] = x;
+            this.element = card;
         }
-
-        return a;
+        else {
+            this.element = element;
+            this.cardBack = element.querySelector('.card-back');
+            this.cardFront = element.querySelector('.card-front');
+        }
     }
 
-    function startTimer() {
-        let timer = document.querySelector('.timer');
-        let timeInternal = time;
-        timer.textContent = formatTime(timeInternal);
+    open() {
+        this.element.classList.add('open-card');
+        this.element.classList.remove('close-card');
+        this.element.classList.add('freezed');
+    }
+
+    close(quick) {
+        this.element.classList.remove('open-card');
+        this.element.classList.add('close-card');
+        if (quick)
+            this.element.style.transition = 'transform .2s';
+    }
+
+    isOpened() {
+        return this.element.classList.contains('open-card')
+    }
+
+    freeze() {
+        this.element.classList.add('freezed');
+    }
+
+    matches(otherCard) {
+        return this.element.textContent == otherCard.element.textContent;
+    }
+
+    match() {
+        this.cardBack.classList.add('match');
+    }
+
+    mismatch() {
+        this.cardBack.classList.add('mismatch');
+    }
+
+    setGridArea(gridRowStart, gridColumnStart, gridRowEnd, gridColumnEnd) {
+        this.element.style.gridArea = gridRowStart + ' / ' + gridColumnStart + ' / ' + gridRowEnd + ' / ' + gridColumnEnd;
+    }
+
+    clear(quick = false) {
+        this.cardBack.classList.remove('match');
+        this.cardBack.classList.remove('mismatch');
+        this.element.classList.remove('freezed');
+        this.close(quick);
+    }
+
+    set textContent(content) {
+        this.cardBack.textContent = content;
+    }
+}
+
+class Timer {
+    constructor(initialTime) {
+        this.timeInternal = initialTime;
+        this.timer = document.querySelector('.timer');
+        this.timer.textContent = formatTime(initialTime);
+        this._isStarted = false;
+    }
+
+    start(endGame) {
+        let getNextTimerValue1 = getNextTimerValue(this.timeInternal);
         let timerId = setInterval(() => {
-            timeInternal = getNextTimerValue(timeInternal);
-            timer.textContent = formatTime(timeInternal);
-            if (timeInternal.m == 0 && timeInternal.s == 0) { 
+            let nextTime = getNextTimerValue1();
+            this.timer.textContent = formatTime(nextTime);
+            if (nextTime.m == 0 && nextTime.s == 0) {
                 endGame(timerId, 'Loose', 'Try again')
             };
         }, 1000);
+
+        this._isStarted = true;
         return timerId;
     }
 
-    function getNextTimerValue(t) {
-        return (t.s > 0) ? { m: t.m, s: t.s - 1 } : { m: t.m - 1, s: 59 };
+    get isStarted() {
+        return this._isStarted;
     }
 
-    function formatTime(t) {
-        return leadingZero(t.m) + ':' + leadingZero(t.s);
+    set isStarted(isStarted) {
+        this._isStarted = isStarted;
+    }
+}
+
+function getNextTimerValue(t) {
+    let t1 = { s: t.s, m: t.m };
+    return function () {
+        t1 = (t1.s > 0) ? { m: t1.m, s: t1.s - 1 } : { m: t1.m - 1, s: 59 };
+        return t1;
+    };
+}
+
+function formatTime(t) {
+    return leadingZero(t.m) + ':' + leadingZero(t.s);
+}
+
+function leadingZero(num) {
+    return (num >= 10 ? '' : '0') + num.toString();
+}
+
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        x = a[i];
+        a[i] = a[j];
+        a[j] = x;
     }
 
-    function leadingZero(num) {
-        return (num >= 10 ? '' : '0') + num.toString();
-    }
+    return a;
+}
 
-    function endGame(timerId, resultText, buttonText) {
-        clearInterval(timerId);
-        document.querySelector('.fullscreen').style.display = 'flex';
-        document.querySelector('.notification').style.display = 'flex';
-        splitTextToTags(resultText);       
-        document.querySelector('.play-again-text').textContent = buttonText;
-    }
+function splitTextToTags(str) {
+    let notificationText = document.querySelector('.notification-text');
+    Array.from(notificationText.getElementsByTagName('p')).forEach(p => notificationText.removeChild(p));
+    for (var i = 0; i < str.length; i++) {
+        let char = document.createElement('p');
+        char.textContent = str.charAt(i);
+        char.animate([
+            { transform: 'rotate3d(1, 0, 0, 0deg)' },
+            { transform: 'rotate3d(1, 0, 0, 70deg)' },
+            { transform: 'rotate3d(1, 0, 0, 0deg)' }
 
-    function splitTextToTags(str) {
-        let notificationText = document.querySelector('.notification-text');
-        let delay = 0;
-        Array.from(notificationText.getElementsByTagName('p')).forEach(p => notificationText.removeChild(p));
-        for (var i = 0; i < str.length; i++) {
-            let char = document.createElement('p');
-            // char.style.animationDelay = delay.toString() + 's';
-            // delay += 0.2;
-            char.textContent = str.charAt(i);
-            char.animate([
-                {transform: 'rotate3d(1, 0, 0, 0deg)'},
-                {transform: 'rotate3d(1, 0, 0, 70deg)'},
-                {transform: 'rotate3d(1, 0, 0, 0deg)'}
-
-            ], {
-                duration: 1200,
-                iterations: Infinity,
-                easing: 'ease-out',
-                delay: i*100,
-            }
-        );
-            notificationText.appendChild(char);
-          }
-    }
-
-    function playAgain() {
-        let shuffled = shuffleCards(emojis);
-        let nextEmoji = getNext(shuffled);
-        Array.from(document.getElementsByClassName('card')).forEach(c => {
-            clear(c);
-            setTimeout(function() {
-                c.querySelector('.card-back').textContent = nextEmoji();
-                c.style.transition = 'transform .5s';
-            }, 200);
+        ], {
+            duration: 1200,
+            iterations: Infinity,
+            easing: 'ease-out',
+            delay: i * 100,
         });
-        
-        openedCards = [];
-        document.querySelector('.fullscreen').style.display = 'none';
-        timerId = startTimer();
-    }
 
-    function clear(card) {
-        close(card, true);
-        card.classList.remove('freezed');
-        let cardBack = card.querySelector('.card-back');
-        cardBack.classList.remove('match');
-        cardBack.classList.remove('mismatch');
-    }
-
-    function getNext(arr) {
-        let counter = 0;
-        return function() {
-            let next = arr[counter]; counter += 1; return next;
-        }
+        notificationText.appendChild(char);
     }
 }

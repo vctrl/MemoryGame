@@ -44,7 +44,6 @@ h1 {
 }
 
 .card {
-    display: none;
     height: 130px;
     transform-style: preserve-3d;
     width: 130px;
