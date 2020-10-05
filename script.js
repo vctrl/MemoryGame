@@ -1,6 +1,6 @@
 let cellsWidth = 4;
 let cellsHeight = 3;
-let time = { m: 1, s: 0 };
+let time = { m: 0, s: 30 };
 
 let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
     '🐮', '🐷', '🐸', '🐙', '🐵', '🦄', '🐞', '🦀', '🐟',
@@ -27,8 +27,8 @@ class Game {
         this.createGrid();
     }
 
-    end(timer, resultText, buttonText) {
-        clearInterval(timer.timerId);
+    end(timerId, resultText, buttonText) {
+        clearInterval(timerId);
         document.querySelector('.fullscreen').style.display = 'flex';
         document.querySelector('.notification').style.display = 'flex';
         splitTextToTags(resultText);
@@ -58,6 +58,7 @@ class Game {
 
         this.openedCards = [];
         document.querySelector('.fullscreen').style.display = 'none';
+        this.timer = new Timer(time);
         this.timer.start(this.end);
     }
 
@@ -113,7 +114,7 @@ class Game {
                         card.match();
                         this.openedCards = [];
                         if (Array.from(document.getElementsByClassName('open-card')).length == cellsWidth * cellsHeight) {
-                            game.end(timer, 'Win', 'Play again');
+                            game.end(timer.timerId, 'Win', 'Play again');
                         }
                     }
                     else {
@@ -219,7 +220,7 @@ class Timer {
 
     start(endGame) {
         let getNextTimerValue1 = getNextTimerValue(this.timeInternal);
-        this.timerId = setInterval(() => {
+        let timerId = setInterval(() => {
             let nextTime = getNextTimerValue1();
             this.timer.textContent = formatTime(nextTime);
             if (nextTime.m == 0 && nextTime.s == 0) {
@@ -227,6 +228,7 @@ class Timer {
             };
         }, 1000);
 
+        this.timerId = timerId;
         this._isStarted = true;
     }
 
