@@ -6,10 +6,6 @@ let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '�
     '🐮', '🐷', '🐸', '🐙', '🐵', '🦄', '🐞', '🦀', '🐟',
     '🐊', '🐓', '🦃', '🐿', '🐬', '🐳', '🐋', '🐏', '🐑', '🐡'];
 
-    // remove this
-let timerId;
-let openedCards = [];
-
 function initGame() {
     let shuffled = shuffle(emojis).slice(0, cellsWidth * cellsHeight / 2);
     let shuffled2 = shuffled.concat(shuffled);
@@ -31,8 +27,8 @@ class Game {
         this.createGrid();
     }
 
-    end(timerId, resultText, buttonText) {
-        clearInterval(timerId);
+    end(timer, resultText, buttonText) {
+        clearInterval(timer.timerId);
         document.querySelector('.fullscreen').style.display = 'flex';
         document.querySelector('.notification').style.display = 'flex';
         splitTextToTags(resultText);
@@ -60,9 +56,9 @@ class Game {
             }, 200);
         });
 
-        openedCards = [];
+        this.openedCards = [];
         document.querySelector('.fullscreen').style.display = 'none';
-        timerId = this.timer.start(this.end);
+        this.timer.start(this.end);
     }
 
     createGrid() {
@@ -95,7 +91,7 @@ class Game {
         }
 
         if (target.classList.contains('card-front') && !timer.isStarted) {
-            timerId = timer.start(game.end);
+            timer.start(game.end);
             timer.isStarted = true;
         }
 
@@ -106,6 +102,7 @@ class Game {
         }
         else {
             card.open();
+            let openedCards = this.openedCards;
             switch (openedCards.length) {
                 case 0:
                     openedCards.push(card);
@@ -114,9 +111,9 @@ class Game {
                     if (card.matches(openedCards[0])) {
                         openedCards[0].match();
                         card.match();
-                        openedCards = [];
+                        this.openedCards = [];
                         if (Array.from(document.getElementsByClassName('open-card')).length == cellsWidth * cellsHeight) {
-                            game.end(timerId, 'Win', 'Play again');
+                            game.end(timer, 'Win', 'Play again');
                         }
                     }
                     else {
@@ -131,7 +128,7 @@ class Game {
                         c.close();
                     })
 
-                    openedCards = [card];
+                    this.openedCards = [card];
                     break;
             }
         }
@@ -222,7 +219,7 @@ class Timer {
 
     start(endGame) {
         let getNextTimerValue1 = getNextTimerValue(this.timeInternal);
-        let timerId = setInterval(() => {
+        this.timerId = setInterval(() => {
             let nextTime = getNextTimerValue1();
             this.timer.textContent = formatTime(nextTime);
             if (nextTime.m == 0 && nextTime.s == 0) {
@@ -231,7 +228,6 @@ class Timer {
         }, 1000);
 
         this._isStarted = true;
-        return timerId;
     }
 
     get isStarted() {
