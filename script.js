@@ -10,25 +10,24 @@ function initGame() {
     const shuffledEmojis = shuffleEmojis();
     const cards = shuffledEmojis.map(e => new Card(e));
     const timer = new Timer(time);
-    const game = new Game(cards, timer);
+    const menu = new Menu();
+    const game = new Game(cards, timer, menu);
     const playAgainBtn = document.querySelector('.play-again-button');
     playAgainBtn.addEventListener('click', () => game.restart())
 }
 
 class Game {
-    constructor(cards, timer) {
+    constructor(cards, timer, menu) {
         this.cards = cards;
         this.timer = timer;
         this.openedCards = [];
         this.createGrid();
+        this.menu = menu;
     }
 
     end(resultText, buttonText) {
-        this.timer.clear()
-        document.querySelector('.fullscreen').style.display = 'flex';
-        document.querySelector('.notification').style.display = 'flex';
-        splitTextToTags(resultText);
-        document.querySelector('.play-again-text').textContent = buttonText;
+        this.timer.clear();
+        this.menu.show(buttonText, resultText);
     }
 
     restart() {
@@ -49,7 +48,7 @@ class Game {
         });
 
         this.openedCards = [];
-        document.querySelector('.fullscreen').style.display = 'none';
+        this.menu.hide();
         this.timer = new Timer(time);
         this.timer.start(this);
     }
@@ -238,6 +237,24 @@ class Timer {
     }
 }
 
+class Menu {
+    constructor() {
+        this.fullscreen = document.querySelector('.fullscreen');
+        this.playAgainText = document.querySelector('.play-again-text')
+        this.notificationText = document.querySelector('.notification-text');
+    }
+
+    show(buttonText, resultText) {
+        this.fullscreen.style.display = 'flex';
+        this.playAgainText.textContent = buttonText;
+        splitTextToTags(this.notificationText, resultText)
+    }
+
+    hide() {
+        this.fullscreen.style.display = 'none';
+    }
+}
+
 function getNextTimerValue(t) {
     let t1 = { s: t.s, m: t.m };
     return function () {
@@ -273,8 +290,7 @@ function shuffleLastN(a, n) {
     return a;
 }
 
-function splitTextToTags(str) {
-    let notificationText = document.querySelector('.notification-text');
+function splitTextToTags(notificationText, str) {
     Array.from(notificationText.getElementsByTagName('p')).forEach(p => notificationText.removeChild(p));
     for (var i = 0; i < str.length; i++) {
         let char = document.createElement('p');

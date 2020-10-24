@@ -101,7 +101,7 @@ h1 {
 }
 
 .notification {
-    display: none;
+    display: flex;
     justify-content: center;
     flex-wrap: wrap;
     width: 25%;
