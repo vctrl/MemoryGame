@@ -1,22 +1,19 @@
-let cellsWidth = 4;
-let cellsHeight = 3;
-let time = { m: 0, s: 30 };
+const rowsCount = 4;
+const columnsCount = 3;
+const time = { m: 0, s: 1 };
 
-let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
+const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
     '🐮', '🐷', '🐸', '🐙', '🐵', '🦄', '🐞', '🦀', '🐟',
     '🐊', '🐓', '🦃', '🐿', '🐬', '🐳', '🐋', '🐏', '🐑', '🐡'];
 
 function initGame() {
-    let shuffled = shuffle(emojis).slice(0, cellsWidth * cellsHeight / 2);
-    let shuffled2 = shuffled.concat(shuffled);
-    let shuffledEmojis = shuffle(shuffled2);
-    let cards = [...Array(cellsWidth * cellsHeight).keys()].map(i => new Card(shuffledEmojis[i]));
-
-    let timer = new Timer(time);
-    let game = new Game(cards, timer);
+    const shuffledEmojis = shuffleEmojis();
+    const cards = shuffledEmojis.map(e => new Card(e));
+    const timer = new Timer(time);
+    const game = new Game(cards, timer);
     game.createGrid();
-    let playAgainBtn = document.querySelector('.play-again-button');
-    playAgainBtn.addEventListener('click', (event) => game.restart())
+    const playAgainBtn = document.querySelector('.play-again-button');
+    playAgainBtn.addEventListener('click', () => game.restart())
 }
 
 class Game {
@@ -36,17 +33,13 @@ class Game {
     }
 
     restart() {
-        let shuffled = shuffle(emojis).slice(0, cellsWidth * cellsHeight / 2);
-        let shuffled2 = shuffled.concat(shuffled);
-        let shuffledEmojis = shuffle(shuffled2);
-
         let getNext = function (arr) {
             let counter = 0;
             return function () {
                 let next = arr[counter]; counter += 1; return next;
             }
         };
-
+        let shuffledEmojis = shuffleEmojis()
         let nextEmoji = getNext(shuffledEmojis);
         this.cards.forEach(c => {
             c.clear(true);
@@ -64,16 +57,16 @@ class Game {
 
     createGrid() {
         let grid = document.getElementById('card-grid');
-        grid.style.gridTemplateColumns = 'repeat(' + (cellsWidth - 1) + ', 130px 25px) 130px';
-        grid.style.gridTemplateRows = 'repeat(' + (cellsHeight - 1) + ', 130px 25px) 130px';
+        grid.style.gridTemplateColumns = 'repeat(' + (rowsCount - 1) + ', 130px 25px) 130px';
+        grid.style.gridTemplateRows = 'repeat(' + (columnsCount - 1) + ', 130px 25px) 130px';
 
-        for (var i = 1; i <= cellsHeight * 2; i += 2) {
+        for (var i = 1; i <= columnsCount * 2; i += 2) {
             let gridRowStart = i;
             let gridRowEnd = i + 1;
-            for (var j = 1; j <= cellsWidth * 2; j += 2) {
+            for (var j = 1; j <= rowsCount * 2; j += 2) {
                 let gridColumnStart = j;
                 let gridColumnEnd = j + 1;
-                let card = this.cards[(i - 1) / 2 * cellsWidth + (j - 1) / 2];
+                let card = this.cards[(i - 1) / 2 * rowsCount + (j - 1) / 2];
                 card.setGridArea(gridRowStart, gridColumnStart, gridRowEnd, gridColumnEnd);
                 grid.appendChild(card.element);
             }
@@ -113,7 +106,7 @@ class Game {
                         openedCards[0].match();
                         card.match();
                         this.openedCards = [];
-                        if (Array.from(document.getElementsByClassName('open-card')).length == cellsWidth * cellsHeight) {
+                        if (Array.from(document.getElementsByClassName('open-card')).length == rowsCount * columnsCount) {
                             game.end(timer.timerId, 'Win', 'Play again');
                         }
                     }
@@ -255,6 +248,12 @@ function formatTime(t) {
 
 function leadingZero(num) {
     return (num >= 10 ? '' : '0') + num.toString();
+}
+
+function shuffleEmojis() {
+    let shuffled = shuffle(emojis).slice(0, rowsCount * columnsCount / 2);
+    let shuffled2 = shuffled.concat(shuffled);
+    return shuffle(shuffled2);
 }
 
 function shuffle(a) {
