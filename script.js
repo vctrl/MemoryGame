@@ -255,14 +255,15 @@ function leadingZero(num) {
 }
 
 function shuffleEmojis() {
-    let shuffled = shuffle(emojis).slice(0, rowsCount * columnsCount / 2);
+    let uniqueCount = rowsCount * columnsCount / 2
+    let shuffled = shuffleLastN(emojis, uniqueCount).slice(emojis.length - uniqueCount);
     let shuffled2 = shuffled.concat(shuffled);
-    return shuffle(shuffled2);
+    return shuffleLastN(shuffled2, shuffled2.length);
 }
 
-function shuffle(a) {
+function shuffleLastN(a, n) {
     var j, x, i;
-    for (i = a.length - 1; i > 0; i--) {
+    for (i = a.length - 1; i > a.length - n; i--) {
         j = Math.floor(Math.random() * (i + 1));
         x = a[i];
         a[i] = a[j];
