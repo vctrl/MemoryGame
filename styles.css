@@ -177,6 +177,14 @@ h1 {
     z-index: 1000;
 }
 
+.fast-transition {
+    transition: transform .2s;
+}
+
+.standard-transition {
+    transition: transform .5s;
+}
+
 @keyframes bounce {
     25%{transform: scale(1.15);}
     50%{transform: scale(0.9);}

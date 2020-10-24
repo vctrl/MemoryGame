@@ -27,21 +27,16 @@ class Game {
     }
 
     restart() {
-        let getNext = function (arr) {
-            let counter = 0;
-            return function () {
-                let next = arr[counter]; counter += 1; return next;
-            }
-        };
         let shuffledEmojis = shuffleEmojis()
-        let nextEmoji = getNext(shuffledEmojis);
-        this.cards.forEach(c => {
-            c.clear(true);
+        for (let i = 0; i < this.cards.length; i++) {
+            let currentCard = this.cards[i];
+            currentCard.clear(true);
             setTimeout(function () {
-                c.textContent = nextEmoji();
-                c.element.style.transition = 'transform .5s';
+                currentCard.textContent = shuffledEmojis[i];
+                currentCard.element.classList.remove('fast-transition')
+                currentCard.element.classList.add('standard-transition')
             }, 200);
-        });
+        }
 
         this.openedCards = [];
         this.menu.hide();
@@ -157,8 +152,10 @@ class Card {
     close(quick) {
         this.element.classList.remove('open-card');
         this.element.classList.add('close-card');
-        if (quick)
-            this.element.style.transition = 'transform .2s';
+        if (quick) {
+            this.element.classList.add('fast-transition')
+            this.element.classList.remove('standard-transition')
+        }
     }
 
     isOpened() {
