@@ -7,22 +7,18 @@ let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '�
     '🐊', '🐓', '🦃', '🐿', '🐬', '🐳', '🐋', '🐏', '🐑', '🐡'];
 
 function initGame() {
-    const shuffledEmojis = shuffleEmojis();
-    const cards = shuffledEmojis.map(e => new Card(e));
-    const timer = new Timer(time);
-    const menu = new Menu();
-    const game = new Game(cards, timer, menu);
+    const game = new Game();
     const playAgainBtn = document.querySelector('.play-again-button');
     playAgainBtn.addEventListener('click', () => game.restart())
 }
 
 class Game {
-    constructor(cards, timer, menu) {
-        this.cards = cards;
-        this.timer = timer;
+    constructor() {
+        this.cards = shuffleEmojis().map(e => new Card(e));
+        this.timer = new Timer(time);
         this.openedCards = [];
         this.createGrid();
-        this.menu = menu;
+        this.menu = new Menu();
     }
 
     end(resultText, buttonText) {
