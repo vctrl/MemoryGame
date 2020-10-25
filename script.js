@@ -1,6 +1,6 @@
 const rowsCount = 4;
 const columnsCount = 3;
-const time = { m: 0, s: 1 };
+const time = { m: 0, s: 30 };
 
 let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
     '🐮', '🐷', '🐸', '🐙', '🐵', '🦄', '🐞', '🦀', '🐟',
@@ -199,7 +199,7 @@ class Timer {
         this.timeInternal = initialTime;
         this.timer = document.querySelector('.timer');
         this.timer.textContent = formatTime(initialTime);
-        this._isStarted = false;
+        this.isStarted = false;
     }
 
     start(game) {
@@ -214,19 +214,11 @@ class Timer {
         }, 1000);
 
         this.timerId = timerId;
-        this._isStarted = true;
+        this.isStarted = true;
     }
 
     clear() {
         clearInterval(this.timerId)
-    }
-
-    get isStarted() {
-        return this._isStarted;
-    }
-
-    set isStarted(isStarted) {
-        this._isStarted = isStarted;
     }
 }
 
