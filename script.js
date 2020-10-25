@@ -41,7 +41,6 @@ class Game {
         this.openedCards = [];
         this.menu.hide();
         this.timer = new Timer(time);
-        this.timer.start(this);
     }
 
     createGrid() {
