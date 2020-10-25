@@ -46,8 +46,8 @@ class Game {
 
     createGrid() {
         let grid = document.getElementById('card-grid');
-        grid.style.gridTemplateColumns = 'repeat(' + (rowsCount - 1) + ', 130px 25px) 130px';
-        grid.style.gridTemplateRows = 'repeat(' + (columnsCount - 1) + ', 130px 25px) 130px';
+        grid.style.setProperty("--columnsCount", columnsCount);
+        grid.style.setProperty("--rowsCount", rowsCount);
 
         for (var i = 1; i <= columnsCount * 2; i += 2) {
             let gridRowStart = i;

@@ -25,6 +25,8 @@ h1 {
 .card-grid {
     display: grid;
     perspective: 600px;
+    grid-template-columns: repeat(var(--columnsCount), 130px 25px) 130px;
+    grid-template-rows: repeat(var(--rowsCount), 130px 25px) 130px;
 }
 
 .card-grid-wrapper {
