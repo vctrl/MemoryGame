@@ -1,5 +1,5 @@
-const rowsCount = 4;
-const columnsCount = 3;
+const columnsCount = 4;
+const rowsCount = 3;
 const time = { m: 0, s: 30 };
 
 let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁',
@@ -45,16 +45,16 @@ class Game {
 
     createGrid() {
         let grid = document.getElementById('card-grid');
-        grid.style.setProperty("--columnsCount", columnsCount);
-        grid.style.setProperty("--rowsCount", rowsCount);
+        grid.style.setProperty("--rowsCount", rowsCount-1);
+        grid.style.setProperty("--columnsCount", columnsCount-1);
 
-        for (var i = 1; i <= columnsCount * 2; i += 2) {
+        for (var i = 1; i <= rowsCount * 2; i += 2) {
             let gridRowStart = i;
             let gridRowEnd = i + 1;
-            for (var j = 1; j <= rowsCount * 2; j += 2) {
+            for (var j = 1; j <= columnsCount * 2; j += 2) {
                 let gridColumnStart = j;
                 let gridColumnEnd = j + 1;
-                let card = this.cards[(i - 1) / 2 * rowsCount + (j - 1) / 2];
+                let card = this.cards[(i - 1) / 2 * columnsCount + (j - 1) / 2];
                 card.setGridArea(gridRowStart, gridColumnStart, gridRowEnd, gridColumnEnd);
                 grid.appendChild(card.element);
             }
@@ -94,7 +94,7 @@ class Game {
                         openedCards[0].match();
                         card.match();
                         this.openedCards = [];
-                        if (Array.from(document.getElementsByClassName('open-card')).length == rowsCount * columnsCount) {
+                        if (Array.from(document.getElementsByClassName('open-card')).length == columnsCount * rowsCount) {
                             game.end('Win', 'Play again');
                         }
                     }
@@ -256,7 +256,7 @@ function leadingZero(num) {
 }
 
 function shuffleEmojis() {
-    let uniqueCount = rowsCount * columnsCount / 2
+    let uniqueCount = columnsCount * rowsCount / 2
     let shuffled = shuffleLastN(emojis, uniqueCount).slice(emojis.length - uniqueCount);
     let shuffled2 = shuffled.concat(shuffled);
     return shuffleLastN(shuffled2, shuffled2.length);
